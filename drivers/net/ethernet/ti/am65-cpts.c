@@ -704,8 +704,8 @@ static int am65_cpts_pps_enable(struct am65_cpts *cpts, int on)
 
 		ns = am65_cpts_gettime(cpts, NULL);
 		ts = ns_to_timespec64(ns);
-		rq.perout.period.sec = 1;
-		rq.perout.period.nsec = 0;
+		rq.perout.period.sec = 0;
+		rq.perout.period.nsec = 1000000;
 		rq.perout.start.sec = ts.tv_sec + 2;
 		rq.perout.start.nsec = 0;
 		rq.perout.index = cpts->pps_genf_idx;
