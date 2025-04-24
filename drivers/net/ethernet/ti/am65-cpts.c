@@ -699,6 +699,7 @@ static int am65_cpts_pps_enable(struct am65_cpts *cpts, int on)
 
 	mutex_lock(&cpts->ptp_clk_lock);
 
+	
 	if (on) {
 		am65_cpts_extts_enable_hw(cpts, cpts->pps_hw_ts_idx, on);
 
