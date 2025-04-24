@@ -128,6 +128,18 @@ struct am65_cpts_regs {
 #define AM65_CPTS_EVENT_2_REG_DOMAIN_MASK	(0xFF)
 #define AM65_CPTS_EVENT_2_REG_DOMAIN_SHIFT	(0)
 
+/*
+* Change the frequency of GENF for static mapping
+* according to the ti,pps property in DTS. 
+* For example 2.2 kHz = 0.0022 Hz:
+* 	SECONDOFPERIOD 0
+*	NANOSECONDOFPERIOD 22000000
+* This is because the variables in the struct ptp_clock_time are not declared as float (better).
+* Finally, the sum of SECONDOFPERIOD and NANOSECONDOFPERIOD is made into timespec64_to_ns().
+ */
+ #define SECONDOFPERIOD 0
+ #define NANOSECONDOFPERIOD 1000000000
+
 enum {
 	AM65_CPTS_EV_PUSH,	/* Time Stamp Push Event */
 	AM65_CPTS_EV_ROLL,	/* Time Stamp Rollover Event */
