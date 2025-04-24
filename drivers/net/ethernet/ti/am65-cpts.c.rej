@@ -1,0 +1,18 @@
+--- drivers/net/ethernet/ti/am65-cpts.c	2025-03-01 11:47:58.355830059 +0100
++++ drivers/net/ethernet/ti/am65-cpts.c	2025-03-01 11:47:19.624225852 +0100
+@@ -716,8 +728,8 @@
+  
+ 		 ns = am65_cpts_gettime(cpts, NULL);
+ 		 ts = ns_to_timespec64(ns);
+-		 rq.perout.period.sec = 1;
+-		 rq.perout.period.nsec = 0;
++		 rq.perout.period.sec = SECONDOFPERIOD;
++		 rq.perout.period.nsec = NANOSECONDOFPERIOD;
+ 		 rq.perout.start.sec = ts.tv_sec + 2;
+ 		 rq.perout.start.nsec = 0;
+ 		 rq.perout.index = cpts->pps_genf_idx;
+@@ -1328,4 +1340,4 @@
+  
+  MODULE_LICENSE("GPL v2");
+  MODULE_AUTHOR("Grygorii Strashko <grygorii.strashko@ti.com>");
+- MODULE_DESCRIPTION("TI K3 AM65 CPTS driver");+ MODULE_DESCRIPTION("TI K3 AM65 CPTS driver");
