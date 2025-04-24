@@ -747,7 +747,7 @@
 		};
 
 		cpts@3d000 {
-			compatible = "ti,j721e-cpts";
+			compatible = "ti,am65-cpts";
 			reg = <0x00 0x3d000 0x00 0x400>;
 			clocks = <&k3_clks 13 3>;
 			clock-names = "cpts";

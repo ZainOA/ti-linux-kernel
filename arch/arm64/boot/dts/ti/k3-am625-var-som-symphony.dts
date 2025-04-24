@@ -10,6 +10,12 @@
 
 #include "k3-am625-var-som.dtsi"
 
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include "k3-pinctrl.h"
+
+/* Ensure all included files are present in the directory */
+
+
 / {
 	model = "Variscite VAR-SOM-AM62 on Symphony-Board";
 
@@ -31,7 +37,7 @@
 	backlight: backlight {
 		compatible = "pwm-backlight";
 		pwms = <&epwm1 0 1000000 PWM_POLARITY_NORMAL>;
-		status = "okay";
+		status = "disabled";
 		brightness-levels = < 0  1  2  3  4  5  6  7  8  9
 				      10 11 12 13 14 15 16 17 18 19
 				      20 21 22 23 24 25 26 27 28 29
@@ -60,7 +66,7 @@
 	display {
 		compatible = "sgd,gktw70sdae4se";
 		backlight = <&backlight>;
-		status = "okay";
+		status = "disabled";
 
 		port@0 {
 			lcd_in0: endpoint {
@@ -106,7 +112,6 @@
 		compatible = "regulator-fixed";
 		regulator-name = "ov5640_buf_en";
 		gpios = <&main_gpio0 21 GPIO_ACTIVE_HIGH>;
-		regulator-always-on;
 		regulator-boot-on;
 		status="okay";
 	};
@@ -118,7 +123,7 @@
 		pinctrl-0 = <&vdd_mmc1_pins_default>;
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
-		regulator-boot-on;
+		gpios = <&main_gpio0 30 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
 		gpio = <&main_gpio0 30 GPIO_ACTIVE_HIGH>;
 		status="okay";
@@ -145,15 +150,18 @@
 	};
 };
 
+
 &cpsw3g {
 	status = "okay";
 	pinctrl-names = "default";
 	pinctrl-0 = <&main_rgmii1_pins_default
-		     &main_rgmii2_pins_default>;
+		     	&main_rgmii2_pins_default
+				&arbitraryFreq_pins_default
+				&cpsw3g1_pins_default>;
 
 	cpts@3d000 {
 		/* MAP HW3_TS_PUSH to GENF1 */
-		ti,pps = <2 1>;
+		//ti,pps = <2 1>;
 	};
 };
 
@@ -210,7 +218,7 @@
 };
 
 &epwm1 {
-	status = "okay";
+	status = "disabled";
 	pinctrl-names = "default";
 	pinctrl-0 = <&main_epwm1_pins_default>;
 };
@@ -228,7 +236,7 @@
 };
 
 &main_mcan0 {
-	status = "okay";
+	status = "disabled";
 	pinctrl-names = "default";
 	pinctrl-0 = <&main_mcan0_pins_default>;
 	phys = <&transceiver1>;
@@ -301,13 +309,13 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&main_i2c1_pins_default>;
 	clock-frequency = <400000>;
-	status = "okay";
+	status = "disabled";
 
 	/* DS1337 RTC module */
 	rtc@68 {
 		compatible = "dallas,ds1337";
 		reg = <0x68>;
-		status = "okay";
+		status = "disabled";
 	};
 
 	/* Capacitive touch controller */
@@ -324,7 +332,7 @@
 		touchscreen-inverted-x;
 		touchscreen-inverted-y;
 		wakeup-source;
-		status = "okay";
+		status = "disabled";
 	};
 };
 
@@ -483,8 +491,39 @@
 			AM62X_IOPAD(0x00e4, PIN_OUTPUT, 7) /* (AA23) VOUT0_DATA11.GPIO0_56 */
 		>;
 	};
-};
 
+	arbitraryFreq_pins_default: arbitraryFreq-default-pins {
+		pinctrl-single,pins = <
+			AM62X_IOPAD(0x01d8, PIN_OUTPUT, 3) /* (C15) MCAN0_TX.SYNC2_OUT */
+		>;
+	};
+
+	cpsw3g1_pins_default: cpsw3g1-default-pins {
+		pinctrl-single,pins = <
+		 	AM62X_IOPAD(0x01c4, PIN_INPUT, 1) /* (B13) SPI0_D0.CP_GEMAC_CPTS0_HW1TSPUSH */
+                >;
+	};
+
+	myecap1_pins_default: myecap1-default-pins {
+		pinctrl-single,pins = <
+			AM62X_IOPAD(0x01b8, PIN_INPUT, 3) /* (C13) SPI0_CS1.ECAP0_IN_APWM_OUT */
+		>;
+	};
+
+
+	myepwm0_pins_default: myepwm0-default-pins {
+		pinctrl-single,pins = <
+			AM62X_IOPAD(0x01e8, PIN_INPUT, 4) /* (B17) I2C1_SCL.EHRPWM0_SYNCI */
+			AM62X_IOPAD(0x01ac, PIN_INPUT, 6) /* (E19) MCASP0_AFSR.EHRPWM0_A */
+			AM62X_IOPAD(0x01ec, PIN_OUTPUT, 4) /* (A17) I2C1_SDA.EHRPWM0_SYNCO */
+
+		>;
+	};
+
+
+	
+};
+ 
 &main_spi2 {
 	status = "okay";
 	pinctrl-names = "default";
@@ -566,8 +605,12 @@
 	/* Use Time Sync Router to map GENF1 input to HW3_TS_PUSH output */
 	cpsw_cpts: cpsw-cpts {
 		pinctrl-single,pins = <
-			/* pps [cpsw cpts genf1] in17 -> out12 [cpsw cpts hw3_push] */
+			/* arbitraryFreq [cpsw cpts genf1] in17 -> out12 [cpsw cpts hw3_push] */
 			K3_TS_OFFSET(12, 17)
+            /* arbitraryFreq gen pin [cpsw cpts genf1] in17 -> out22 [SYNC2_OUT pin] */
+            K3_TS_OFFSET(22, 17)
+            /* arbitraryFreq ts push pin [CP_GEMAC_CPTS0_HW1TSPUSH] in12 -> out10 [cpsw cpts hw1_push] */
+            K3_TS_OFFSET(11, 12)
 			>;
 	};
 };
@@ -643,3 +686,46 @@
 	/* WKUP UART0 is used by DM firmware */
 	status = "reserved";
 };
+
+
+
+&cbass_main {
+
+
+	ti_ecap0@23100000 {
+		compatible = "ti,am62-ecap-capture";
+		#address-cells = <2>;
+        #size-cells = <2>;
+		reg = <0x00 0x23100000 0x00 0x100>;
+		interrupts = <GIC_SPI 113 IRQ_TYPE_EDGE_RISING>;
+		power-domains = <&k3_pds 51 TI_SCI_PD_EXCLUSIVE>;
+		clocks = <&k3_clks 52 0>;
+		clock-names = "fck";
+		pinctrl-names = "default";
+		pinctrl-0 = <&myecap1_pins_default>;
+		status = "okay";
+		
+	};
+};
+
+&epwm0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&myepwm0_pins_default>;
+	status = "okay";
+
+};
+
+
+
+&main_spi0 {
+	status = "disable";
+	/* Resistive touch controller */
+	ads7846@0 {
+		status = "disable";
+	};
+};
+
+
+
+
+
