@@ -161,7 +161,7 @@
 
 	cpts@3d000 {
 		/* MAP HW3_TS_PUSH to GENF1 */
-		//ti,pps = <2 1>;
+		ti,pps = <2 1>;
 	};
 };
 
